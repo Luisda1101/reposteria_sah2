@@ -1,6 +1,9 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/functions.php';
+
+checkSessionValidity();
+requireAdmin();
 
 // Verificar si el usuario está logueado y es administrador
 requireAdmin();
@@ -12,9 +15,9 @@ $fecha_hasta = isset($_GET['fecha_hasta']) ? cleanInput($_GET['fecha_hasta']) : 
 $busqueda = isset($_GET['busqueda']) ? cleanInput($_GET['busqueda']) : '';
 
 // Construir la consulta SQL con filtros
-$sql = "SELECT p.id_pedido, p.fecha_pedido, p.estado, p.total, c.nombre as cliente, c.telefono 
+$sql = "SELECT p.id_pedido, p.fecha_pedido, p.estado, p.total, c.nombre AS nombre_cliente, c.telefono 
         FROM pedidos p 
-        JOIN clientes c ON p.id_cliente = c.id_cliente 
+        JOIN clientes c ON p.id_cliente = c.id_cliente
         WHERE 1=1";
 
 $params = [];
@@ -60,7 +63,7 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
 // Incluir el header
-include_once '../../includes/header.php';
+include_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -83,24 +86,32 @@ include_once '../../includes/header.php';
                 <label for="estado" class="form-label">Estado</label>
                 <select class="form-select" id="estado" name="estado">
                     <option value="">Todos</option>
-                    <option value="pendiente" <?php echo $estado_filtro == 'pendiente' ? 'selected' : ''; ?>>Pendiente</option>
-                    <option value="en_proceso" <?php echo $estado_filtro == 'en_proceso' ? 'selected' : ''; ?>>En Proceso</option>
-                    <option value="completado" <?php echo $estado_filtro == 'completado' ? 'selected' : ''; ?>>Completado</option>
-                    <option value="entregado" <?php echo $estado_filtro == 'entregado' ? 'selected' : ''; ?>>Entregado</option>
-                    <option value="cancelado" <?php echo $estado_filtro == 'cancelado' ? 'selected' : ''; ?>>Cancelado</option>
+                    <option value="pendiente" <?php echo $estado_filtro == 'pendiente' ? 'selected' : ''; ?>>Pendiente
+                    </option>
+                    <option value="en_proceso" <?php echo $estado_filtro == 'en_proceso' ? 'selected' : ''; ?>>En Proceso
+                    </option>
+                    <option value="completado" <?php echo $estado_filtro == 'completado' ? 'selected' : ''; ?>>Completado
+                    </option>
+                    <option value="entregado" <?php echo $estado_filtro == 'entregado' ? 'selected' : ''; ?>>Entregado
+                    </option>
+                    <option value="cancelado" <?php echo $estado_filtro == 'cancelado' ? 'selected' : ''; ?>>Cancelado
+                    </option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label for="fecha_desde" class="form-label">Fecha Desde</label>
-                <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="<?php echo $fecha_desde; ?>">
+                <input type="date" class="form-control" id="fecha_desde" name="fecha_desde"
+                    value="<?php echo $fecha_desde; ?>">
             </div>
             <div class="col-md-3">
                 <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
-                <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="<?php echo $fecha_hasta; ?>">
+                <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta"
+                    value="<?php echo $fecha_hasta; ?>">
             </div>
             <div class="col-md-3">
                 <label for="busqueda" class="form-label">Buscar</label>
-                <input type="text" class="form-control" id="busqueda" name="busqueda" placeholder="Cliente, teléfono, ID..." value="<?php echo $busqueda; ?>">
+                <input type="text" class="form-control" id="busqueda" name="busqueda"
+                    placeholder="Cliente, teléfono, ID..." value="<?php echo $busqueda; ?>">
             </div>
             <div class="col-12 text-end">
                 <a href="index.php" class="btn btn-secondary me-2">Limpiar</a>
@@ -134,58 +145,79 @@ include_once '../../includes/header.php';
                         <?php while ($row = mysqli_fetch_assoc($result)): ?>
                             <tr>
                                 <td>#<?php echo $row['id_pedido']; ?></td>
-                                <td><?php echo $row['cliente']; ?></td>
+                                <td><?php echo $row['nombre_cliente']; ?></td>
                                 <td><?php echo $row['telefono']; ?></td>
                                 <td><?php echo formatDate($row['fecha_pedido']); ?></td>
                                 <td>$<?php echo number_format($row['total'], 2); ?></td>
                                 <td><?php echo getOrderStatusBadge($row['estado']); ?></td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="ver.php?id=<?php echo $row['id_pedido']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Ver Detalles">
+                                        <a href="ver.php?id=<?php echo $row['id_pedido']; ?>" class="btn btn-sm btn-primary"
+                                            data-bs-toggle="tooltip" title="Ver Detalles">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#statusModal<?php echo $row['id_pedido']; ?>" title="Cambiar Estado">
+                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                            data-bs-target="#statusModal<?php echo $row['id_pedido']; ?>"
+                                            title="Cambiar Estado">
                                             <i class="fas fa-exchange-alt"></i>
                                         </button>
                                     </div>
-                                    
+
                                     <!-- Modal para cambiar estado -->
-                                    <div class="modal fade" id="statusModal<?php echo $row['id_pedido']; ?>" tabindex="-1" aria-labelledby="statusModalLabel<?php echo $row['id_pedido']; ?>" aria-hidden="true">
+                                    <div class="modal fade" id="statusModal<?php echo $row['id_pedido']; ?>" tabindex="-1"
+                                        aria-labelledby="statusModalLabel<?php echo $row['id_pedido']; ?>" aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title" id="statusModalLabel<?php echo $row['id_pedido']; ?>">Cambiar Estado del Pedido #<?php echo $row['id_pedido']; ?></h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    <h5 class="modal-title"
+                                                        id="statusModalLabel<?php echo $row['id_pedido']; ?>">Cambiar Estado del
+                                                        Pedido #<?php echo $row['id_pedido']; ?></h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
                                                 </div>
                                                 <form action="actualizar_estado.php" method="post">
                                                     <div class="modal-body">
-                                                        <input type="hidden" name="id_pedido" value="<?php echo $row['id_pedido']; ?>">
+                                                        <input type="hidden" name="id_pedido"
+                                                            value="<?php echo $row['id_pedido']; ?>">
                                                         <div class="mb-3">
-                                                            <label for="estado<?php echo $row['id_pedido']; ?>" class="form-label">Estado</label>
-                                                            <select class="form-select" id="estado<?php echo $row['id_pedido']; ?>" name="estado" required>
+                                                            <label for="estado<?php echo $row['id_pedido']; ?>"
+                                                                class="form-label">Estado</label>
+                                                            <select class="form-select"
+                                                                id="estado<?php echo $row['id_pedido']; ?>" name="estado"
+                                                                required>
                                                                 <option value="pendiente" <?php echo $row['estado'] == 'pendiente' ? 'selected' : ''; ?>>Pendiente</option>
-                                                                <option value="en_proceso" <?php echo $row['estado'] == 'en_proceso' ? 'selected' : ''; ?>>En Proceso</option>
-                                                                <option value="completado" <?php echo $row['estado'] == 'completado' ? 'selected' : ''; ?>>Completado</option>
+                                                                <option value="en_proceso" <?php echo $row['estado'] == 'en_proceso' ? 'selected' : ''; ?>>En
+                                                                    Proceso</option>
+                                                                <option value="completado" <?php echo $row['estado'] == 'completado' ? 'selected' : ''; ?>>
+                                                                    Completado</option>
                                                                 <option value="entregado" <?php echo $row['estado'] == 'entregado' ? 'selected' : ''; ?>>Entregado</option>
                                                                 <option value="cancelado" <?php echo $row['estado'] == 'cancelado' ? 'selected' : ''; ?>>Cancelado</option>
                                                             </select>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="notificar<?php echo $row['id_pedido']; ?>" class="form-label">Notificar al cliente</label>
+                                                            <label for="notificar<?php echo $row['id_pedido']; ?>"
+                                                                class="form-label">Notificar al cliente</label>
                                                             <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="notificar<?php echo $row['id_pedido']; ?>" name="notificar" checked>
-                                                                <label class="form-check-label" for="notificar<?php echo $row['id_pedido']; ?>">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                    id="notificar<?php echo $row['id_pedido']; ?>"
+                                                                    name="notificar" checked>
+                                                                <label class="form-check-label"
+                                                                    for="notificar<?php echo $row['id_pedido']; ?>">
                                                                     Enviar correo electrónico de notificación
                                                                 </label>
                                                             </div>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="notas<?php echo $row['id_pedido']; ?>" class="form-label">Notas adicionales</label>
-                                                            <textarea class="form-control" id="notas<?php echo $row['id_pedido']; ?>" name="notas" rows="3"></textarea>
+                                                            <label for="notas<?php echo $row['id_pedido']; ?>"
+                                                                class="form-label">Notas adicionales</label>
+                                                            <textarea class="form-control"
+                                                                id="notas<?php echo $row['id_pedido']; ?>" name="notas"
+                                                                rows="3"></textarea>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Cancelar</button>
                                                         <button type="submit" class="btn btn-primary">Actualizar Estado</button>
                                                     </div>
                                                 </form>
@@ -266,12 +298,12 @@ include_once '../../includes/header.php';
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Mostrar/ocultar campos de fecha personalizada
         const dateRangeSelect = document.getElementById('export_date_range');
         const dateRangeCustom = document.querySelector('.date-range-custom');
-        
-        dateRangeSelect.addEventListener('change', function() {
+
+        dateRangeSelect.addEventListener('change', function () {
             if (this.value === 'custom') {
                 dateRangeCustom.style.display = 'flex';
             } else {
@@ -280,8 +312,3 @@ include_once '../../includes/header.php';
         });
     });
 </script>
-
-<?php
-// Incluir el footer
-include_once '../../includes/footer.php';
-?>

@@ -2,6 +2,9 @@
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';
 
+checkSessionValidity();
+requireAdmin();
+
 // Verificar si el usuario está logueado y es administrador
 requireAdmin();
 

@@ -1,20 +1,28 @@
 <?php
-require_once 'config/database.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/functions.php';
 
-// Obtener productos destacados
+// Inicializar sesión para el carrito
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Obtener productos destacados - CONSULTA CORREGIDA
 $sql_destacados = "SELECT p.*, COUNT(dp.id_producto) as ventas 
                   FROM productos p 
-                  LEFT JOIN pedidos dp ON p.id_producto = dp.id_producto 
+                  LEFT JOIN detalle_pedido dp ON p.id_producto = dp.id_producto 
                   WHERE p.disponible = 1 
                   GROUP BY p.id_producto 
                   ORDER BY ventas DESC, p.id_producto DESC 
                   LIMIT 4";
 $result_destacados = mysqli_query($conn, $sql_destacados);
 
-// Obtener categorías (ocasiones)
-$sql_categorias = "SELECT DISTINCT ocasion FROM productos WHERE ocasion IS NOT NULL AND ocasion != '' AND disponible = 1";
+// Obtener categorías (ocasiones) - Esta consulta está bien
+$sql_categorias = "SELECT DISTINCT categoria FROM productos WHERE categoria IS NOT NULL AND categoria != '' AND disponible = 1";
 $result_categorias = mysqli_query($conn, $sql_categorias);
+
+// Contar productos en carrito
+$carrito_count = isset($_SESSION['carrito']) ? count($_SESSION['carrito']) : 0;
 ?>
 
 <!DOCTYPE html>
@@ -59,14 +67,31 @@ $result_categorias = mysqli_query($conn, $sql_categorias);
                         <a class="nav-link" href="contacto.php">Contacto</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-primary text-white ms-lg-3 px-3" href="pedido.php">
-                            <i class="fas fa-shopping-cart me-2"></i> Hacer Pedido
+                        <a class="nav-link btn btn-primary text-white ms-lg-3 px-3" href="carrito.php" id="carritoBtn">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            Carrito
+                            <span class="badge bg-light text-primary ms-1"
+                                id="carritoCount"><?php echo $carrito_count; ?></span>
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <div id="carritoToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-shopping-cart text-primary me-2"></i>
+                <strong class="me-auto">Carrito</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="carritoToastBody">
+                Producto agregado al carrito
+            </div>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero-section">
@@ -90,7 +115,6 @@ $result_categorias = mysqli_query($conn, $sql_categorias);
             </div>
         </div>
     </section>
-
 
     <!-- Featured Products -->
     <section class="py-5 bg-light">
@@ -133,9 +157,12 @@ $result_categorias = mysqli_query($conn, $sql_categorias);
                                     <?php endif; ?>
                                 </div>
                                 <div class="card-footer bg-white border-top-0">
-                                    <a href="pedido.php?producto=<?php echo $producto['id_producto']; ?>"
-                                        class="btn btn-outline-primary w-100">
-                                        <i class="fas fa-shopping-cart me-2"></i> Ordenar
+                                    <a href="#" class="btn btn-outline-primary w-100 agregar-carrito"
+                                        data-id="<?php echo $producto['id_producto']; ?>"
+                                        data-nombre="<?php echo htmlspecialchars($producto['nombre']); ?>"
+                                        data-precio="<?php echo $producto['precio']; ?>"
+                                        data-foto="<?php echo $producto['foto']; ?>">
+                                        <i class="fas fa-shopping-cart me-2"></i> Agregar al Carrito
                                     </a>
                                 </div>
                             </div>
@@ -369,14 +396,47 @@ $result_categorias = mysqli_query($conn, $sql_categorias);
                         reservados.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="login.php" class="text-white text-decoration-none">Acceso Administrador</a>
+                    <a href="<?php echo rtrim(env('BASE_PATH', '/reposteria_sah2'), '/'); ?>/login.php"
+                        class="text-white text-decoration-none">Acceso Administrador</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS Bundle with Popper -->
+    <!-- Bootstrap JS Bundle with Popper (debe estar antes de </body>) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Manejar clic en "Agregar al carrito"
+            document.querySelectorAll('.agregar-carrito').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const id = this.dataset.id;
+                    const nombre = this.dataset.nombre;
+                    const precio = this.dataset.precio;
+                    const foto = this.dataset.foto;
+
+                    fetch('agregar_al_carrito.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, nombre, precio, foto })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Actualizar contador
+                                document.getElementById('carritoCount').textContent = data.carrito_count;
+                                // Mostrar toast
+                                document.getElementById('carritoToastBody').textContent = data.message;
+                                const toast = new bootstrap.Toast(document.getElementById('carritoToast'));
+                                toast.show();
+                            }
+                        });
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

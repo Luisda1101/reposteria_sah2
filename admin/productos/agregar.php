@@ -2,6 +2,9 @@
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';
 
+checkSessionValidity();
+requireAdmin();
+
 // Verificar si el usuario está logueado y es administrador
 requireAdmin();
 
@@ -13,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $peso = cleanInput($_POST['peso']);
     $descripcion = cleanInput($_POST['descripcion']);
     $foto = $_FILES['foto'];
-    $ocasion = cleanInput($_POST['ocasion']);
+    $categoria = cleanInput($_POST['categoria']);
     $disponible = isset($_POST['disponible']) ? 1 : 0;
     
     // Validar datos
@@ -32,11 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         // Insertar en la base de datos
-        $sql = "INSERT INTO productos (nombre, precio, peso, foto, descripcion, ocasion, disponible) 
+        $sql = "INSERT INTO productos (nombre, precio, peso, foto, descripcion, categoria, disponible) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, "sdssssi", $nombre, $precio, $peso, $foto, $descripcion, $ocasion, $disponible);
+            mysqli_stmt_bind_param($stmt, "sdssssi", $nombre, $precio, $peso, $foto, $descripcion, $categoria, $disponible);
             
             if (mysqli_stmt_execute($stmt)) {
                 showAlert("Producto agregado correctamente.", "success");
@@ -97,16 +100,12 @@ include_once '../../includes/header.php';
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="ocasion" class="form-label">Ocasión</label>
-                    <select class="form-select" id="ocasion" name="ocasion">
+                    <label for="categoria" class="form-label">Categoríaa</label>
+                    <select class="form-select" id="categoria" name="categoria">
                         <option value="">General</option>
-                        <option value="cumpleanos">Cumpleaños</option>
-                        <option value="boda">Boda</option>
-                        <option value="aniversario">Aniversario</option>
-                        <option value="graduacion">Graduación</option>
-                        <option value="baby_shower">Baby Shower</option>
-                        <option value="navidad">Navidad</option>
-                        <option value="san_valentin">San Valentín</option>
+                        <option value="tortas">Tortas</option>
+                        <option value="cupcakes">Cupcakes</option>
+                        <option value="postres">Postres</option>
                     </select>
                 </div>
             </div>

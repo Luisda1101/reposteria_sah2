@@ -2,6 +2,9 @@
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';
 
+checkSessionValidity();
+requireAdmin();
+
 // Verificar si el usuario está logueado y es administrador
 requireAdmin();
 
@@ -48,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $precio = cleanInput($_POST['precio']);
     $peso = cleanInput($_POST['peso']);
     $descripcion = cleanInput($_POST['descripcion']);
-    $ocasion = cleanInput($_POST['ocasion']);
+    $categoria = cleanInput($_POST['categoria']);
     $disponible = isset($_POST['disponible']) ? 1 : 0;
     
     // Validar datos
@@ -72,10 +75,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         // Actualizar en la base de datos
-        $sql = "UPDATE productos SET nombre = ?, precio = ?, peso = ?, foto = ?, descripcion = ?, ocasion = ?, disponible = ? WHERE id_producto = ?";
+        $sql = "UPDATE productos SET nombre = ?, precio = ?, peso = ?, foto = ?, descripcion = ?, categoria = ?, disponible = ? WHERE id_producto = ?";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, "sdssssii", $nombre, $precio, $peso, $foto, $descripcion, $ocasion, $disponible, $id);
+            mysqli_stmt_bind_param($stmt, "sdssssii", $nombre, $precio, $peso, $foto, $descripcion, $categoria, $disponible, $id);
             
             if (mysqli_stmt_execute($stmt)) {
                 showAlert("Producto actualizado correctamente.", "success");
@@ -140,16 +143,12 @@ include_once '../../includes/header.php';
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="ocasion" class="form-label">Ocasión</label>
-                    <select class="form-select" id="ocasion" name="ocasion">
-                        <option value="" <?php echo empty($producto['ocasion']) ? 'selected' : ''; ?>>General</option>
-                        <option value="cumpleanos" <?php echo $producto['ocasion'] == 'cumpleanos' ? 'selected' : ''; ?>>Cumpleaños</option>
-                        <option value="boda" <?php echo $producto['ocasion'] == 'boda' ? 'selected' : ''; ?>>Boda</option>
-                        <option value="aniversario" <?php echo $producto['ocasion'] == 'aniversario' ? 'selected' : ''; ?>>Aniversario</option>
-                        <option value="graduacion" <?php echo $producto['ocasion'] == 'graduacion' ? 'selected' : ''; ?>>Graduación</option>
-                        <option value="baby_shower" <?php echo $producto['ocasion'] == 'baby_shower' ? 'selected' : ''; ?>>Baby Shower</option>
-                        <option value="navidad" <?php echo $producto['ocasion'] == 'navidad' ? 'selected' : ''; ?>>Navidad</option>
-                        <option value="san_valentin" <?php echo $producto['ocasion'] == 'san_valentin' ? 'selected' : ''; ?>>San Valentín</option>
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select class="form-select" id="categoria" name="categoria">
+                        <option value="" <?php echo empty($producto['categoria']) ? 'selected' : ''; ?>>General</option>
+                        <option value="tortas" <?php echo $producto['categoria'] == 'tortas' ? 'selected' : ''; ?>>Tortas</option>
+                        <option value="cupcakes" <?php echo $producto['categoria'] == 'cupcakes' ? 'selected' : ''; ?>>Cupcakes</option>
+                        <option value="postres" <?php echo $producto['categoria'] == 'postres' ? 'selected' : ''; ?>>Postres</option>
                     </select>
                 </div>
             </div>
@@ -175,8 +174,3 @@ include_once '../../includes/header.php';
         </form>
     </div>
 </div>
-
-<?php
-// Incluir el footer
-include_once '../../includes/footer.php';
-?>

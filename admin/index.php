@@ -1,13 +1,16 @@
 <?php
-require_once '../config/database.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+checkSessionValidity();
+requireAdmin();
 
 // Verificar si el usuario está logueado
 requireLogin();
 
 // Obtener estadísticas
 // Total de productos
-$sql_productos = "SELECT COUNT(*) as total FROM productos";
+$sql_productos = "SELECT COUNT(*) as total FROM productos WHERE disponible = 1";
 $result_productos = mysqli_query($conn, $sql_productos);
 $row_productos = mysqli_fetch_assoc($result_productos);
 $total_productos = $row_productos['total'];
@@ -18,7 +21,7 @@ $result_pedidos = mysqli_query($conn, $sql_pedidos);
 $row_pedidos = mysqli_fetch_assoc($result_pedidos);
 $total_pedidos = $row_pedidos['total'];
 
-// Total de clientes
+// Total de clientes (contando clientes únicos por teléfono en la tabla pedidos)
 $sql_clientes = "SELECT COUNT(*) as total FROM clientes";
 $result_clientes = mysqli_query($conn, $sql_clientes);
 $row_clientes = mysqli_fetch_assoc($result_clientes);
@@ -31,16 +34,16 @@ $row_ventas = mysqli_fetch_assoc($result_ventas);
 $total_ventas = $row_ventas['total'] ? $row_ventas['total'] : 0;
 
 // Pedidos recientes
-$sql_pedidos_recientes = "SELECT p.id_pedido, p.fecha_pedido, p.estado, p.total, c.nombre as cliente 
+$sql_pedidos_recientes = "SELECT p.id_pedido, p.fecha_pedido, p.estado, p.total, c.nombre 
                           FROM pedidos p 
-                          JOIN clientes c ON p.id_cliente = c.id_cliente 
+                          JOIN clientes c ON p.id_cliente = c.id_cliente
                           ORDER BY p.fecha_pedido DESC LIMIT 5";
 $result_pedidos_recientes = mysqli_query($conn, $sql_pedidos_recientes);
 
 // Productos más vendidos
 $sql_productos_populares = "SELECT p.id_producto, p.nombre, p.precio, COUNT(dp.id_producto) as ventas, SUM(dp.cantidad) as cantidad_total 
                             FROM productos p 
-                            JOIN detalle_pedidos dp ON p.id_producto = dp.id_producto 
+                            JOIN detalle_pedido dp ON p.id_producto = dp.id_producto 
                             JOIN pedidos pe ON dp.id_pedido = pe.id_pedido 
                             WHERE pe.estado != 'cancelado' 
                             GROUP BY p.id_producto 
@@ -48,7 +51,7 @@ $sql_productos_populares = "SELECT p.id_producto, p.nombre, p.precio, COUNT(dp.i
 $result_productos_populares = mysqli_query($conn, $sql_productos_populares);
 
 // Incluir el header
-include_once '../includes/header.php';
+include_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -82,7 +85,8 @@ include_once '../includes/header.php';
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ventas</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">$<?php echo number_format($total_ventas, 2); ?></div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            $<?php echo number_format($total_ventas, 2); ?></div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -150,8 +154,10 @@ include_once '../includes/header.php';
                             <?php if (mysqli_num_rows($result_pedidos_recientes) > 0): ?>
                                 <?php while ($pedido = mysqli_fetch_assoc($result_pedidos_recientes)): ?>
                                     <tr>
-                                        <td><a href="pedidos/ver.php?id=<?php echo $pedido['id_pedido']; ?>">#<?php echo $pedido['id_pedido']; ?></a></td>
-                                        <td><?php echo $pedido['cliente']; ?></td>
+                                        <td><a
+                                                href="pedidos/ver.php?id=<?php echo $pedido['id_pedido']; ?>">#<?php echo $pedido['id_pedido']; ?></a>
+                                        </td>
+                                        <td><?php echo $pedido['nombre']; ?></td>
                                         <td><?php echo formatDate($pedido['fecha_pedido']); ?></td>
                                         <td><?php echo getOrderStatusBadge($pedido['estado']); ?></td>
                                         <td>$<?php echo number_format($pedido['total'], 2); ?></td>
@@ -191,7 +197,9 @@ include_once '../includes/header.php';
                             <?php if (mysqli_num_rows($result_productos_populares) > 0): ?>
                                 <?php while ($producto = mysqli_fetch_assoc($result_productos_populares)): ?>
                                     <tr>
-                                        <td><a href="productos/editar.php?id=<?php echo $producto['id_producto']; ?>"><?php echo $producto['nombre']; ?></a></td>
+                                        <td><a
+                                                href="productos/editar.php?id=<?php echo $producto['id_producto']; ?>"><?php echo $producto['nombre']; ?></a>
+                                        </td>
                                         <td>$<?php echo number_format($producto['precio'], 2); ?></td>
                                         <td><?php echo $producto['ventas']; ?></td>
                                         <td><?php echo $producto['cantidad_total']; ?></td>
@@ -209,8 +217,3 @@ include_once '../includes/header.php';
         </div>
     </div>
 </div>
-
-<?php
-// Incluir el footer
-include_once '../includes/footer.php';
-?>

@@ -1,12 +1,11 @@
 <?php
+
+require_once 'includes/functions.php';
+
 // Iniciar sesión
 session_start();
 
-// Destruir todas las variables de sesión
-$_SESSION = array();
-
-// Destruir la sesión
-session_destroy();
+logoutUser();
 
 // Redirigir a la página de login
 header("location: login.php");

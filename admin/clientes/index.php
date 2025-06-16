@@ -1,6 +1,9 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/functions.php';
+
+checkSessionValidity();
+requireAdmin();
 
 // Verificar si el usuario está logueado y es administrador
 requireAdmin();
@@ -11,7 +14,7 @@ $busqueda = isset($_GET['busqueda']) ? cleanInput($_GET['busqueda']) : '';
 // Construir la consulta SQL con filtros
 $sql = "SELECT c.*, COUNT(p.id_pedido) as total_pedidos, SUM(p.total) as total_gastado 
         FROM clientes c 
-        LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente 
+        LEFT JOIN pedidos p ON p.id_cliente = c.id_cliente
         WHERE 1=1";
 
 $params = [];
@@ -39,7 +42,7 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
 // Incluir el header
-include_once '../../includes/header.php';
+include_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -59,7 +62,8 @@ include_once '../../includes/header.php';
     <div class="card-body">
         <form action="" method="get" class="row g-3">
             <div class="col-md-10">
-                <input type="text" class="form-control" id="busqueda" name="busqueda" placeholder="Buscar por nombre, teléfono o correo..." value="<?php echo $busqueda; ?>">
+                <input type="text" class="form-control" id="busqueda" name="busqueda"
+                    placeholder="Buscar por nombre, teléfono o correo..." value="<?php echo $busqueda; ?>">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">Buscar</button>
@@ -109,44 +113,65 @@ include_once '../../includes/header.php';
                                 <td>$<?php echo number_format($row['total_gastado'] ?? 0, 2); ?></td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="ver.php?id=<?php echo $row['id_cliente']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Ver Detalles">
+                                        <a href="ver.php?id=<?php echo $row['id_cliente']; ?>" class="btn btn-sm btn-primary"
+                                            data-bs-toggle="tooltip" title="Ver Detalles">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editClientModal<?php echo $row['id_cliente']; ?>" title="Editar">
+                                        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#editClientModal<?php echo $row['id_cliente']; ?>" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
-                                    
+
                                     <!-- Modal para editar cliente -->
-                                    <div class="modal fade" id="editClientModal<?php echo $row['id_cliente']; ?>" tabindex="-1" aria-labelledby="editClientModalLabel<?php echo $row['id_cliente']; ?>" aria-hidden="true">
+                                    <div class="modal fade" id="editClientModal<?php echo $row['id_cliente']; ?>" tabindex="-1"
+                                        aria-labelledby="editClientModalLabel<?php echo $row['id_cliente']; ?>"
+                                        aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title" id="editClientModalLabel<?php echo $row['id_cliente']; ?>">Editar Cliente</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    <h5 class="modal-title"
+                                                        id="editClientModalLabel<?php echo $row['id_cliente']; ?>">Editar
+                                                        Cliente</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
                                                 </div>
                                                 <form action="editar.php" method="post">
                                                     <div class="modal-body">
-                                                        <input type="hidden" name="id_cliente" value="<?php echo $row['id_cliente']; ?>">
+                                                        <input type="hidden" name="id_cliente"
+                                                            value="<?php echo $row['id_cliente']; ?>">
                                                         <div class="mb-3">
-                                                            <label for="nombre<?php echo $row['id_cliente']; ?>" class="form-label">Nombre</label>
-                                                            <input type="text" class="form-control" id="nombre<?php echo $row['id_cliente']; ?>" name="nombre" value="<?php echo $row['nombre']; ?>" required>
+                                                            <label for="nombre<?php echo $row['id_cliente']; ?>"
+                                                                class="form-label">Nombre</label>
+                                                            <input type="text" class="form-control"
+                                                                id="nombre<?php echo $row['id_cliente']; ?>" name="nombre"
+                                                                value="<?php echo $row['nombre']; ?>" required>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="telefono<?php echo $row['id_cliente']; ?>" class="form-label">Teléfono</label>
-                                                            <input type="text" class="form-control" id="telefono<?php echo $row['id_cliente']; ?>" name="telefono" value="<?php echo $row['telefono']; ?>" required>
+                                                            <label for="telefono<?php echo $row['id_cliente']; ?>"
+                                                                class="form-label">Teléfono</label>
+                                                            <input type="text" class="form-control"
+                                                                id="telefono<?php echo $row['id_cliente']; ?>" name="telefono"
+                                                                value="<?php echo $row['telefono']; ?>" required>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="correo<?php echo $row['id_cliente']; ?>" class="form-label">Correo Electrónico</label>
-                                                            <input type="email" class="form-control" id="correo<?php echo $row['id_cliente']; ?>" name="correo" value="<?php echo $row['correo']; ?>" required>
+                                                            <label for="correo<?php echo $row['id_cliente']; ?>"
+                                                                class="form-label">Correo Electrónico</label>
+                                                            <input type="email" class="form-control"
+                                                                id="correo<?php echo $row['id_cliente']; ?>" name="correo"
+                                                                value="<?php echo $row['correo']; ?>" required>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="direccion<?php echo $row['id_cliente']; ?>" class="form-label">Dirección</label>
-                                                            <textarea class="form-control" id="direccion<?php echo $row['id_cliente']; ?>" name="direccion" rows="3" required><?php echo $row['direccion']; ?></textarea>
+                                                            <label for="direccion<?php echo $row['id_cliente']; ?>"
+                                                                class="form-label">Dirección</label>
+                                                            <textarea class="form-control"
+                                                                id="direccion<?php echo $row['id_cliente']; ?>" name="direccion"
+                                                                rows="3" required><?php echo $row['direccion']; ?></textarea>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Cancelar</button>
                                                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                                                     </div>
                                                 </form>
@@ -202,8 +227,3 @@ include_once '../../includes/header.php';
         </div>
     </div>
 </div>
-
-<?php
-// Incluir el footer
-include_once '../../includes/footer.php';
-?>

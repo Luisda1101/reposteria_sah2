@@ -2,6 +2,9 @@
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';
 
+checkSessionValidity();
+requireAdmin();
+
 // Verificar si el usuario está logueado y es administrador
 requireAdmin();
 
@@ -42,7 +45,7 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
 }
 
 // Verificar si el producto está en algún pedido
-$sql_check = "SELECT COUNT(*) as count FROM detalle_pedidos WHERE id_producto = ?";
+$sql_check = "SELECT COUNT(*) as count FROM detalle_pedido WHERE id_producto = ?";
 if ($stmt_check = mysqli_prepare($conn, $sql_check)) {
     mysqli_stmt_bind_param($stmt_check, "i", $id);
     

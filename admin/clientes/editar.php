@@ -1,6 +1,9 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/functions.php';
+
+checkSessionValidity();
+requireAdmin();
 
 // Verificar si el usuario está logueado y es administrador
 requireAdmin();
@@ -26,13 +29,13 @@ if ($stmt_check = mysqli_prepare($conn, $sql_check)) {
     mysqli_stmt_bind_param($stmt_check, "si", $correo, $id_cliente);
     mysqli_stmt_execute($stmt_check);
     mysqli_stmt_store_result($stmt_check);
-    
+
     if (mysqli_stmt_num_rows($stmt_check) > 0) {
         showAlert("Ya existe otro cliente con ese correo electrónico.", "danger");
         header("Location: " . $redirect);
         exit;
     }
-    
+
     mysqli_stmt_close($stmt_check);
 }
 
@@ -41,13 +44,13 @@ $sql = "UPDATE clientes SET nombre = ?, telefono = ?, correo = ?, direccion = ? 
 
 if ($stmt = mysqli_prepare($conn, $sql)) {
     mysqli_stmt_bind_param($stmt, "ssssi", $nombre, $telefono, $correo, $direccion, $id_cliente);
-    
+
     if (mysqli_stmt_execute($stmt)) {
         showAlert("Cliente actualizado correctamente.", "success");
     } else {
         showAlert("Error al actualizar el cliente: " . mysqli_error($conn), "danger");
     }
-    
+
     mysqli_stmt_close($stmt);
 } else {
     showAlert("Error en la consulta.", "danger");

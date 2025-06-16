@@ -1,15 +1,19 @@
 <?php
+// Cargar variables de entorno
+require_once __DIR__ . '/../includes/functions.php';
+loadEnv();
+
 // Configuración de la base de datos
-define('DB_SERVER', 'localhost');
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', '');
-define('DB_NAME', 'reposteria_sahagun');
+$host = env('DB_HOST', 'localhost');
+$user = env('DB_USER', 'root');
+$pass = env('DB_PASS', '');
+$db = env('DB_NAME', 'reposteria');
 
 // Intentar conectar a la base de datos MySQL
-$conn = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+$conn = mysqli_connect($host, $user, $pass, $db);
 
 // Verificar la conexión
-if($conn === false){
+if (!$conn) {
     die("ERROR: No se pudo conectar a la base de datos. " . mysqli_connect_error());
 }
 

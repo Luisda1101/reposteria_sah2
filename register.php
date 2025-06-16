@@ -1,6 +1,6 @@
 <?php
-require_once 'config/database.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/functions.php';
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = cleanInput($_POST["name"]);
     $password = $_POST["password"];
     $confirm_password = $_POST["confirm_password"];
-    $role = cleanInput($_POST["role"]); // Ej: "admin" o "usuario"
+    $role = cleanInput($_POST["role"]);
 
     if (empty($username) || empty($name) || empty($password) || empty($confirm_password) || empty($role)) {
         showAlert("Todos los campos son obligatorios.", "danger");
@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         showAlert("Las contraseñas no coinciden.", "danger");
     } else {
         // Verificar si el usuario ya existe
-        $check_sql = "SELECT id_usuario FROM usuarios WHERE usuario = ?";
+        $check_sql = "SELECT id_usuario FROM usuario WHERE usuario = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         mysqli_stmt_bind_param($check_stmt, "s", $username);
         mysqli_stmt_execute($check_stmt);
@@ -37,12 +37,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Registrar el usuario
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-            $insert_sql = "INSERT INTO usuarios (usuario, password, nombre, rol, activo) VALUES (?, ?, ?, ?, 1)";
+            $insert_sql = "INSERT INTO usuario (usuario, contrasena, nombre, rol, estado) VALUES (?, ?, ?, ?, 1)";
             $insert_stmt = mysqli_prepare($conn, $insert_sql);
             mysqli_stmt_bind_param($insert_stmt, "ssss", $username, $hashed_password, $name, $role);
 
             if (mysqli_stmt_execute($insert_stmt)) {
-                showAlert("Usuario registrado correctamente. Ahora puede iniciar sesión.", "success");
+                // Redirigir al login después de registrar correctamente
+                header("Location: login.php?registered=1");
+                exit;
             } else {
                 showAlert("Error al registrar el usuario. Intente más tarde.", "danger");
             }
@@ -57,6 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Registro - La Repostería Sahagún</title>
@@ -64,6 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="assets/css/styles.css" rel="stylesheet">
 </head>
+
 <body class="bg-light">
     <div class="container">
         <div class="login-container">
@@ -112,4 +116,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
