@@ -26,7 +26,6 @@ if (session_status() == PHP_SESSION_NONE) {
         <?php if (isLoggedIn()): ?>
             <?php include_once __DIR__ . '/sidebar.php'; ?>
         <?php endif; ?>
-
         <div class="content">
             <?php if (isLoggedIn()): ?>
                 <nav class="navbar navbar-expand-lg navbar-light bg-light">

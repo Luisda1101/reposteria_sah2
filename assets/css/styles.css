@@ -15,7 +15,10 @@ body {
     max-width: 250px;
     min-height: 100vh;
     color: #fff;
-    transition: all 0.3s;
+    transition: margin-left 0.3s, left 0.3s;
+    background: #212529;
+    z-index: 1040;
+    position: relative;
 }
 
 #sidebar.active {
@@ -49,9 +52,28 @@ body {
     background: #fff;
 }
 
-#sidebar ul li.active > a {
+#sidebar ul li.active>a {
     color: #fff;
     background: #007bff;
+}
+
+/* Sidebar responsive y animación */
+@media (max-width: 991.98px) {
+    #sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        margin-left: -250px;
+    }
+
+    .wrapper.active #sidebar {
+        margin-left: 0 !important;
+    }
+
+    .content {
+        width: 100%;
+    }
 }
 
 /* Estilos del contenido */
@@ -154,12 +176,14 @@ body {
 
 /* Media queries */
 @media (max-width: 768px) {
-    #sidebar {
+
+    /* #sidebar {
         margin-left: -250px;
     }
+
     #sidebar.active {
         margin-left: 0;
-    }
+    } */
     .content {
         width: 100%;
     }

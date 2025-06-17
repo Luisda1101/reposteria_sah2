@@ -7,13 +7,12 @@
     </div>
     <ul class="list-unstyled components mt-4 flex-grow-1">
         <li class="mb-2">
-            <a href="<?php echo rtrim(env('BASE_PATH', '/reposteria_sah2'), '/'); ?>/admin/index.php"
-                class="d-flex align-items-center px-3 py-2 rounded
+            <a href="<?php echo rtrim(env('BASE_PATH', '/reposteria_sah2'), '/'); ?>/admin/index.php" class="d-flex align-items-center px-3 py-2 rounded
                 <?php
-                    // Resalta Dashboard con bg-info text-dark solo si es index.php en /admin/
-                    echo (basename($_SERVER['PHP_SELF']) == 'index.php' && strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false)
-                        ? 'bg-info text-dark'
-                        : 'text-white bg-dark';
+                // Resalta Dashboard con bg-info text-dark solo si es index.php en /admin/
+                echo (basename($_SERVER['PHP_SELF']) == 'index.php' && strpos($_SERVER['SCRIPT_NAME'], '/admin/') !== false)
+                    ? 'bg-info text-dark'
+                    : 'text-white bg-dark';
                 ?>">
                 <i class="fas fa-tachometer-alt me-2"></i> Dashboard
             </a>
