@@ -6,7 +6,7 @@ checkSessionValidity();
 requireAdmin();
 
 // Configuración de paginación
-$registros_por_pagina = 2; // Puedes ajustar este número según tus preferencias
+$registros_por_pagina = 5; // Puedes ajustar este número según tus preferencias
 $pagina_actual = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 $offset = ($pagina_actual - 1) * $registros_por_pagina;
 

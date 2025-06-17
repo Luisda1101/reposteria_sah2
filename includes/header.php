@@ -27,46 +27,11 @@ if (session_status() == PHP_SESSION_NONE) {
             <?php include_once __DIR__ . '/sidebar.php'; ?>
         <?php endif; ?>
         <div class="content">
-            <?php if (isLoggedIn()): ?>
-                <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                    <div class="container-fluid">
-                        <!-- Botón hamburguesa para sidebar -->
-                        <button type="button" id="sidebarCollapse" class="btn btn-primary me-2" aria-label="Mostrar menú">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="ms-auto">
-                            <!-- Menú desplegable de usuario -->
-                            <div class="dropdown">
-                                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user-circle me-1"></i>
-                                    <?php echo htmlspecialchars($_SESSION['user_name']); ?>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                    <li>
-                                        <a class="dropdown-item"
-                                            href="<?php echo rtrim(env('BASE_PATH', '/reposteria_sah2'), '/'); ?>/admin/logout.php">
-                                            Cerrar Sesión
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </nav>
-                <script>
-                    // Script para mostrar/ocultar el menú lateral (hamburguesa)
-                    document.addEventListener('DOMContentLoaded', function () {
-                        var sidebarCollapse = document.getElementById('sidebarCollapse');
-                        var wrapper = document.querySelector('.wrapper');
-                        if (sidebarCollapse && wrapper) {
-                            sidebarCollapse.addEventListener('click', function () {
-                                wrapper.classList.toggle('active');
-                            });
-                        }
-                    });
-                </script>
-            <?php endif; ?>
 
             <div class="container-fluid p-4">
                 <?php displayAlert(); ?>
+                <?php if (isLoggedIn()): ?>
+                    <div class="alert alert-info text-center mb-0 rounded-0">
+                        Sesión iniciada como administrador
+                    </div>
+                <?php endif; ?>

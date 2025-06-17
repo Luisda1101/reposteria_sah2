@@ -61,12 +61,6 @@ $carrito_count = isset($_SESSION['carrito']) ? count($_SESSION['carrito']) : 0;
                         <a class="nav-link" href="productos.php">Productos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="nosotros.php">Nosotros</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contacto.php">Contacto</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link btn btn-primary text-white ms-lg-3 px-3" href="carrito.php" id="carritoBtn">
                             <i class="fas fa-shopping-cart me-2"></i>
                             Carrito
@@ -184,51 +178,43 @@ $carrito_count = isset($_SESSION['carrito']) ? count($_SESSION['carrito']) : 0;
                 <h2 class="fw-bold">Categorías</h2>
                 <p class="text-muted">Encuentra el pastel perfecto para cada ocasión</p>
             </div>
-            <div class="row g-4">
-                <?php
-                $categorias_predefinidas = [
-                    'cumpleanos' => ['nombre' => 'Cumpleaños', 'icono' => 'fa-gift'],
-                    'boda' => ['nombre' => 'Bodas', 'icono' => 'fa-rings-wedding'],
-                    'aniversario' => ['nombre' => 'Aniversarios', 'icono' => 'fa-heart'],
-                    'graduacion' => ['nombre' => 'Graduaciones', 'icono' => 'fa-graduation-cap'],
-                    'baby_shower' => ['nombre' => 'Baby Shower', 'icono' => 'fa-baby-carriage'],
-                    'navidad' => ['nombre' => 'Navidad', 'icono' => 'fa-snowflake'],
-                    'san_valentin' => ['nombre' => 'San Valentín', 'icono' => 'fa-heart'],
-                ];
-
-                $categorias_mostradas = [];
-                while ($categoria = mysqli_fetch_assoc($result_categorias)) {
-                    if (!empty($categoria['ocasion'])) {
-                        $categorias_mostradas[] = $categoria['ocasion'];
-                    }
-                }
-
-                // Asegurar que se muestren al menos 4 categorías
-                if (count($categorias_mostradas) < 4) {
-                    foreach ($categorias_predefinidas as $key => $value) {
-                        if (!in_array($key, $categorias_mostradas) && count($categorias_mostradas) < 4) {
-                            $categorias_mostradas[] = $key;
-                        }
-                    }
-                }
-
-                foreach ($categorias_mostradas as $categoria) {
-                    $nombre = isset($categorias_predefinidas[$categoria]) ? $categorias_predefinidas[$categoria]['nombre'] : ucfirst($categoria);
-                    $icono = isset($categorias_predefinidas[$categoria]) ? $categorias_predefinidas[$categoria]['icono'] : 'fa-birthday-cake';
-                    ?>
-                    <div class="col-6 col-md-3">
-                        <a href="productos.php?categoria=<?php echo $categoria; ?>" class="text-decoration-none">
-                            <div class="card h-100 text-center category-card">
-                                <div class="card-body">
-                                    <div class="category-icon">
-                                        <i class="fas <?php echo $icono; ?>"></i>
-                                    </div>
-                                    <h5 class="card-title mt-3"><?php echo $nombre; ?></h5>
+            <div class="row g-4 justify-content-center">
+                <div class="col-6 col-md-4">
+                    <a href="productos.php?categoria=tortas" class="text-decoration-none">
+                        <div class="card h-100 text-center category-card">
+                            <div class="card-body">
+                                <div class="category-icon">
+                                    <i class="fas fa-birthday-cake"></i>
                                 </div>
+                                <h5 class="card-title mt-3">Tortas</h5>
                             </div>
-                        </a>
-                    </div>
-                <?php } ?>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4">
+                    <a href="productos.php?categoria=cupcakes" class="text-decoration-none">
+                        <div class="card h-100 text-center category-card">
+                            <div class="card-body">
+                                <div class="category-icon">
+                                    <i class="fas fa-cookie-bite"></i>
+                                </div>
+                                <h5 class="card-title mt-3">Cupcakes</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4">
+                    <a href="productos.php?categoria=pasteles" class="text-decoration-none">
+                        <div class="card h-100 text-center category-card">
+                            <div class="card-body">
+                                <div class="category-icon">
+                                    <i class="fas fa-ice-cream"></i>
+                                </div>
+                                <h5 class="card-title mt-3">Pasteles</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -238,7 +224,7 @@ $carrito_count = isset($_SESSION['carrito']) ? count($_SESSION['carrito']) : 0;
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-4 mb-lg-0">
-                    <img src="assets/img/about-us.jpg" alt="Nuestro equipo" class="img-fluid rounded-3 shadow">
+                    <img src="assets/img/about-us.png" alt="Nuestro equipo" class="img-fluid rounded-3 shadow">
                 </div>
                 <div class="col-lg-6">
                     <h2 class="fw-bold mb-4">Sobre La Repostería Sahagún</h2>
@@ -378,8 +364,8 @@ $carrito_count = isset($_SESSION['carrito']) ? count($_SESSION['carrito']) : 0;
                 </div>
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <h5 class="mb-3">Contacto</h5>
-                    <p><i class="fas fa-map-marker-alt me-2"></i> Calle Principal #123, Colonia Centro</p>
-                    <p><i class="fas fa-phone me-2"></i> (123) 456-7890</p>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> Barrio Nueva Granada, Transversal 3A</p>
+                    <p><i class="fas fa-phone me-2"></i> 3016179642</p>
                     <p><i class="fas fa-envelope me-2"></i> info@reposteriasahagun.com</p>
                 </div>
                 <div class="col-lg-4">

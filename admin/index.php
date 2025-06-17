@@ -159,7 +159,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         </td>
                                         <td><?php echo $pedido['nombre']; ?></td>
                                         <td><?php echo formatDate($pedido['fecha_pedido']); ?></td>
-                                        <td><?php echo getOrderStatusBadge($pedido['estado']); ?></td>
+                                        <td><?php echo $pedido['estado']; ?></td>
                                         <td>$<?php echo number_format($pedido['total'], 2); ?></td>
                                     </tr>
                                 <?php endwhile; ?>

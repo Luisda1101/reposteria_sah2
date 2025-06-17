@@ -15,9 +15,10 @@ $fecha_hasta = isset($_GET['fecha_hasta']) ? cleanInput($_GET['fecha_hasta']) : 
 $busqueda = isset($_GET['busqueda']) ? cleanInput($_GET['busqueda']) : '';
 
 // Construir la consulta SQL con filtros
-$sql = "SELECT p.id_pedido, p.fecha_pedido, p.estado, p.total, c.nombre AS nombre_cliente, c.telefono 
+$sql = "SELECT p.id_pedido, p.fecha_pedido, p.estado, p.total, 
+               c.nombre AS nombre_cliente, c.telefono AS telefono_cliente 
         FROM pedidos p 
-        JOIN clientes c ON p.id_cliente = c.id_cliente
+        LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
         WHERE 1=1";
 
 $params = [];
@@ -61,6 +62,40 @@ if (!empty($params)) {
 
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
+
+// Procesar actualización de estado
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_estado'], $_POST['id_pedido'], $_POST['nuevo_estado'])) {
+    $id_pedido = intval($_POST['id_pedido']);
+    $nuevo_estado = $_POST['nuevo_estado'];
+    $estados_validos = ['aceptado', 'en_proceso', 'enviado', 'finalizado'];
+    if (in_array($nuevo_estado, $estados_validos)) {
+        $sql = "UPDATE pedidos SET estado = ? WHERE id_pedido = ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "si", $nuevo_estado, $id_pedido);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        // Mensaje de éxito opcional
+        echo '<div class="alert alert-success">Estado actualizado correctamente.</div>';
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_estado'], $_POST['id_pedido'], $_POST['nuevo_estado'])) {
+    require_once '../../config/database.php';
+    $id_pedido = intval($_POST['id_pedido']);
+    $nuevo_estado = $_POST['nuevo_estado'];
+    $estados_validos = ['aceptado', 'en_proceso', 'enviado', 'finalizado'];
+    if (in_array($nuevo_estado, $estados_validos)) {
+        $sql = "UPDATE pedidos SET estado = ? WHERE id_pedido = ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "si", $nuevo_estado, $id_pedido);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        echo json_encode(['success' => $ok]);
+    } else {
+        echo json_encode(['success' => false]);
+    }
+    exit;
+}
 
 // Incluir el header
 include_once __DIR__ . '/../../includes/header.php';
@@ -145,85 +180,31 @@ include_once __DIR__ . '/../../includes/header.php';
                         <?php while ($row = mysqli_fetch_assoc($result)): ?>
                             <tr>
                                 <td>#<?php echo $row['id_pedido']; ?></td>
-                                <td><?php echo $row['nombre_cliente']; ?></td>
-                                <td><?php echo $row['telefono']; ?></td>
-                                <td><?php echo formatDate($row['fecha_pedido']); ?></td>
-                                <td>$<?php echo number_format($row['total'], 2); ?></td>
-                                <td><?php echo getOrderStatusBadge($row['estado']); ?></td>
+                                <td><?php echo !empty($row['nombre_cliente']) ? $row['nombre_cliente'] : 'Desconocido'; ?></td>
+                                <td><?php echo !empty($row['telefono_cliente']) ? $row['telefono_cliente'] : 'Desconocido'; ?>
+                                </td>
+                                <td><?php echo !empty($row['fecha_pedido']) ? formatDate($row['fecha_pedido']) : 'Desconocido'; ?>
+                                </td>
+                                <td>$<?php echo isset($row['total']) ? number_format($row['total'], 2) : '0.00'; ?></td>
+                                <td><?php echo isset($row['estado']) ? $row['estado'] : 'Desconocido'; ?></td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="ver.php?id=<?php echo $row['id_pedido']; ?>" class="btn btn-sm btn-primary"
-                                            data-bs-toggle="tooltip" title="Ver Detalles">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                            data-bs-target="#statusModal<?php echo $row['id_pedido']; ?>"
-                                            title="Cambiar Estado">
-                                            <i class="fas fa-exchange-alt"></i>
-                                        </button>
-                                    </div>
-
-                                    <!-- Modal para cambiar estado -->
-                                    <div class="modal fade" id="statusModal<?php echo $row['id_pedido']; ?>" tabindex="-1"
-                                        aria-labelledby="statusModalLabel<?php echo $row['id_pedido']; ?>" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title"
-                                                        id="statusModalLabel<?php echo $row['id_pedido']; ?>">Cambiar Estado del
-                                                        Pedido #<?php echo $row['id_pedido']; ?></h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <form action="actualizar_estado.php" method="post">
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="id_pedido"
-                                                            value="<?php echo $row['id_pedido']; ?>">
-                                                        <div class="mb-3">
-                                                            <label for="estado<?php echo $row['id_pedido']; ?>"
-                                                                class="form-label">Estado</label>
-                                                            <select class="form-select"
-                                                                id="estado<?php echo $row['id_pedido']; ?>" name="estado"
-                                                                required>
-                                                                <option value="pendiente" <?php echo $row['estado'] == 'pendiente' ? 'selected' : ''; ?>>Pendiente</option>
-                                                                <option value="en_proceso" <?php echo $row['estado'] == 'en_proceso' ? 'selected' : ''; ?>>En
-                                                                    Proceso</option>
-                                                                <option value="completado" <?php echo $row['estado'] == 'completado' ? 'selected' : ''; ?>>
-                                                                    Completado</option>
-                                                                <option value="entregado" <?php echo $row['estado'] == 'entregado' ? 'selected' : ''; ?>>Entregado</option>
-                                                                <option value="cancelado" <?php echo $row['estado'] == 'cancelado' ? 'selected' : ''; ?>>Cancelado</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label for="notificar<?php echo $row['id_pedido']; ?>"
-                                                                class="form-label">Notificar al cliente</label>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox"
-                                                                    id="notificar<?php echo $row['id_pedido']; ?>"
-                                                                    name="notificar" checked>
-                                                                <label class="form-check-label"
-                                                                    for="notificar<?php echo $row['id_pedido']; ?>">
-                                                                    Enviar correo electrónico de notificación
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label for="notas<?php echo $row['id_pedido']; ?>"
-                                                                class="form-label">Notas adicionales</label>
-                                                            <textarea class="form-control"
-                                                                id="notas<?php echo $row['id_pedido']; ?>" name="notas"
-                                                                rows="3"></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">Cancelar</button>
-                                                        <button type="submit" class="btn btn-primary">Actualizar Estado</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <form method="post" class="d-inline">
+                                        <input type="hidden" name="id_pedido" value="<?php echo $row['id_pedido']; ?>">
+                                        <select name="nuevo_estado" class="form-select form-select-sm d-inline w-auto" required>
+                                            <option value="aceptado" <?php if ($row['estado'] == 'aceptado')
+                                                echo 'selected'; ?>>
+                                                Aceptado</option>
+                                            <option value="en_proceso" <?php if ($row['estado'] == 'en_proceso')
+                                                echo 'selected'; ?>>En Proceso</option>
+                                            <option value="enviado" <?php if ($row['estado'] == 'enviado')
+                                                echo 'selected'; ?>>
+                                                Enviado</option>
+                                            <option value="finalizado" <?php if ($row['estado'] == 'finalizado')
+                                                echo 'selected'; ?>>Finalizado</option>
+                                        </select>
+                                        <button type="submit" name="actualizar_estado"
+                                            class="btn btn-sm btn-primary ms-1">Actualizar</button>
+                                    </form>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -309,6 +290,15 @@ include_once __DIR__ . '/../../includes/header.php';
             } else {
                 dateRangeCustom.style.display = 'none';
             }
+        });
+
+        // Actualización de estado en tiempo real (y recarga forzosa al actualizar)
+        document.querySelectorAll('form .btn[name="actualizar_estado"]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                setTimeout(function () {
+                    window.location.reload(true); // recarga forzosa desde el servidor
+                }, 1000);
+            });
         });
     });
 </script>

@@ -60,12 +60,6 @@ $postres = obtenerProductosPorCategoria($conn, 'postres');
                         <a class="nav-link active" href="productos.php">Productos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="nosotros.php">Nosotros</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contacto.php">Contacto</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link btn btn-primary text-white ms-lg-3 px-3" href="carrito.php" id="carritoBtn">
                             <i class="fas fa-shopping-cart me-2"></i>
                             Carrito

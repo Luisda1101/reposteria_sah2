@@ -4,13 +4,14 @@ require_once __DIR__ . '/../includes/functions.php';
 loadEnv();
 
 // Configuración de la base de datos
-$host = env('DB_HOST', 'localhost');
+$host = env('DB_HOST', 'interchange.proxy.rlwy.net');
 $user = env('DB_USER', 'root');
-$pass = env('DB_PASS', '');
-$db = env('DB_NAME', 'reposteria');
+$pass = env('DB_PASS', 'SHjMiPcaBGZsDvvnHsjWZZaMXgzHJJkn');
+$db = env('DB_NAME', 'railway');
+$port = env('DB_PORT', 55626);
 
 // Intentar conectar a la base de datos MySQL
-$conn = mysqli_connect($host, $user, $pass, $db);
+$conn = mysqli_connect($host, $user, $pass, $db, $port);
 
 // Verificar la conexión
 if (!$conn) {
