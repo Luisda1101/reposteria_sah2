@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '../config/database.php';
+require_once __DIR__ . '../includes/functions.php';
 
 // Iniciar sesión
 if (session_status() == PHP_SESSION_NONE) {
@@ -19,7 +19,7 @@ if (!isset($_SESSION["user_id"]) && isset($_COOKIE["user_id"])) {
 
 // Verificar si ya está logueado
 if (isLoggedIn()) {
-    $basePath = env('BASE_PATH', '/reposteria_sah2');
+    $basePath = env('BASE_PATH', '../reposteria_sah2');
     header("Location: {$basePath}/admin/index.php");
     exit;
 }
