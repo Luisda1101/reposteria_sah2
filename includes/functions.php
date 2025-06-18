@@ -83,7 +83,7 @@ function isAdmin()
 // Función para redirigir si no está logueado
 function requireLogin()
 {
-    $basePath = env('BASE_PATH', '/reposteria_sah2');
+    $basePath = env('BASE_PATH', '/');
     if (!isLoggedIn()) {
         header("Location: {$basePath}/login.php");
         exit;

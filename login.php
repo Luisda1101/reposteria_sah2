@@ -19,7 +19,7 @@ if (!isset($_SESSION["user_id"]) && isset($_COOKIE["user_id"])) {
 
 // Verificar si ya está logueado
 if (isLoggedIn()) {
-    $basePath = env('BASE_PATH', '../reposteria_sah2');
+    $basePath = env('BASE_PATH', '/');
     header("Location: {$basePath}/admin/index.php");
     exit;
 }
@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             setcookie("login_time", $_SESSION["login_time"], $cookie_options);
 
                             // Redirigir según el rol
-                            $basePath = env('BASE_PATH', '/reposteria_sah2');
+                            $basePath = env('BASE_PATH', '/');
                             header("Location: {$basePath}/admin/index.php");
                             exit;
                         } else {
